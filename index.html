@@ -1,104 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Varsity Tools — Home</title>
-  <style>
-    :root{
-      --bg:#0b1220; --card:#111a2e; --muted:#91a4c7; --text:#eaf0ff;
-      --accent:#4da3ff; --border:rgba(255,255,255,.10);
-      --ok:#33d69f;
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: '#4da3ff'
+          },
+          boxShadow: {
+            glow: '0 0 40px rgba(77,163,255,0.25)'
+          }
+        }
+      }
     }
-    *{box-sizing:border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;}
-    body{margin:0; background:linear-gradient(180deg,#070b14,#0b1220); color:var(--text);}
-    .wrap{max-width:1100px; margin:0 auto; padding:22px;}
-    .top{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:14px 16px; border:1px solid var(--border); border-radius:16px;
-      background:rgba(17,26,46,.75); backdrop-filter: blur(10px);
-    }
-    .brand{display:flex; gap:12px; align-items:center;}
-    .logo{
-      width:38px; height:38px; border-radius:12px;
-      background: radial-gradient(circle at 30% 30%, #7bc3ff, #1e5cff);
-      display:grid; place-items:center; font-weight:900;
-      box-shadow: 0 10px 30px rgba(77,163,255,.25);
-    }
-    h1{font-size:18px; margin:0;}
-    p{margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.5;}
-    .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px;}
-    @media(min-width:860px){ .grid{grid-template-columns:repeat(3, 1fr);} }
-    .card{
-      border:1px solid var(--border); border-radius:18px; padding:16px;
-      background:rgba(17,26,46,.75); backdrop-filter: blur(10px);
-      transition:.15s; cursor:pointer;
-    }
-    .card:hover{transform:translateY(-2px); border-color:rgba(77,163,255,.5);}
-    .icon{
-      width:46px; height:46px; border-radius:16px;
-      background:rgba(77,163,255,.18);
-      display:grid; place-items:center;
-      font-size:20px; font-weight:900; margin-bottom:10px;
-    }
-    .title{font-size:16px; font-weight:900; margin:0;}
-    .desc{margin-top:6px; color:var(--muted); font-size:12px;}
-    .btn{
-      display:inline-block; margin-top:12px;
-      padding:10px 12px; border-radius:14px;
-      background:var(--accent); color:#061022; font-weight:900; text-decoration:none;
-    }
-    .note{
-      margin-top:14px; padding:12px 14px; border-radius:16px;
-      border:1px solid var(--border); background:rgba(17,26,46,.55);
-      color:var(--muted); font-size:12px;
-    }
-    .badge{
-      display:inline-block; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border); color:var(--muted); font-size:11px;
-    }
-  </style>
+  </script>
 </head>
-<body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <div class="logo">V</div>
+
+<body class="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 text-slate-800">
+
+  <div class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between gap-4 rounded-2xl border border-black/10 
+                bg-white/70 backdrop-blur-xl px-6 py-4">
+      <div class="flex items-center gap-4">
+        <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-700 
+                    flex items-center justify-center font-black text-lg text-white shadow-glow">
+          V
+        </div>
         <div>
-          <h1>Varsity Tools</h1>
-          <p>Home → Routine Builder • Assignment Maker • Cover Page Maker (PDF Download)</p>
+          <h1 class="text-lg font-extrabold text-slate-900">Varsity Tools</h1>
+          <p class="text-xs text-slate-500">
+            Routine • Assignment • Cover Page (PDF Download)
+          </p>
         </div>
       </div>
-      <span class="badge">Multi-page Website</span>
+      <span class="text-xs px-3 py-1 rounded-full border border-black/10 text-slate-500">
+        Multi-Page Website
+      </span>
     </div>
 
-    <div class="grid">
-      <div class="card" onclick="location.href='routine.html'">
-        <div class="icon">📅</div>
-        <div class="title">Routine Builder</div>
-        <div class="desc">Class routine বানান, row add করুন, তারপর PDF ডাউনলোড।</div>
-        <a class="btn" href="routine.html">Open Routine</a>
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+
+      <!-- Routine -->
+      <div onclick="location.href='routine.html'"
+           class="group cursor-pointer rounded-3xl border border-black/10 
+                  bg-white/70 backdrop-blur-xl p-6 transition 
+                  hover:-translate-y-2 hover:border-blue-400/40 hover:shadow-glow">
+        <div class="h-14 w-14 rounded-2xl bg-blue-500/20 
+                    flex items-center justify-center text-2xl mb-4">
+          📅
+        </div>
+        <h2 class="text-lg font-extrabold text-slate-900">Routine Builder</h2>
+        <p class="text-sm text-slate-600 mt-2">
+          Class routine বানান, serial row add করুন এবং PDF ডাউনলোড করুন।
+        </p>
+        <a href="routine.html"
+           class="inline-block mt-4 rounded-xl bg-blue-500 px-5 py-2 
+                  text-sm font-bold text-white">
+          Open Routine
+        </a>
       </div>
 
-      <div class="card" onclick="location.href='assignment.html'">
-        <div class="icon">📝</div>
-        <div class="title">Assignment Maker</div>
-        <div class="desc">Assignment instruction sheet বানিয়ে PDF ডাউনলোড।</div>
-        <a class="btn" href="assignment.html">Open Assignment</a>
+      <!-- Assignment -->
+      <div onclick="location.href='assignment.html'"
+           class="group cursor-pointer rounded-3xl border border-black/10 
+                  bg-white/70 backdrop-blur-xl p-6 transition 
+                  hover:-translate-y-2 hover:border-blue-400/40 hover:shadow-glow">
+        <div class="h-14 w-14 rounded-2xl bg-blue-500/20 
+                    flex items-center justify-center text-2xl mb-4">
+          📝
+        </div>
+        <h2 class="text-lg font-extrabold text-slate-900">Assignment Maker</h2>
+        <p class="text-sm text-slate-600 mt-2">
+          Instruction sheet তৈরি করে সুন্দর PDF export করুন।
+        </p>
+        <a href="assignment.html"
+           class="inline-block mt-4 rounded-xl bg-blue-500 px-5 py-2 
+                  text-sm font-bold text-white">
+          Open Assignment
+        </a>
       </div>
 
-      <div class="card" onclick="location.href='cover.html'">
-        <div class="icon">📄</div>
-        <div class="title">Cover Page Maker</div>
-        <div class="desc">Submitted by/to সহ cover page বানিয়ে PDF ডাউনলোড।</div>
-        <a class="btn" href="cover.html">Open Cover Page</a>
+      <!-- Cover -->
+      <div onclick="location.href='cover.html'"
+           class="group cursor-pointer rounded-3xl border border-black/10 
+                  bg-white/70 backdrop-blur-xl p-6 transition 
+                  hover:-translate-y-2 hover:border-blue-400/40 hover:shadow-glow">
+        <div class="h-14 w-14 rounded-2xl bg-blue-500/20 
+                    flex items-center justify-center text-2xl mb-4">
+          📄
+        </div>
+        <h2 class="text-lg font-extrabold text-slate-900">Cover Page Maker</h2>
+        <p class="text-sm text-slate-600 mt-2">
+          Submitted by / to সহ professional cover page বানান।
+        </p>
+        <a href="cover.html"
+           class="inline-block mt-4 rounded-xl bg-blue-500 px-5 py-2 
+                  text-sm font-bold text-white">
+          Open Cover Page
+        </a>
       </div>
+
     </div>
 
-    <div class="note">
-      ✅ ব্যবহার: একই ফোল্ডারে এই ৪টা ফাইল রাখুন — <b>index.html</b>, <b>routine.html</b>, <b>assignment.html</b>, <b>cover.html</b> <br/>
-      তারপর <b>index.html</b> ওপেন করলেই Home থেকে সব পেজে যাওয়া যাবে।
+    <!-- Note -->
+    <div class="mt-8 rounded-2xl border border-black/10 
+                bg-white/70 backdrop-blur-xl p-5 
+                text-sm text-slate-600">
+      ✅ একই ফোল্ডারে রাখুন —
+      <b class="text-slate-800">index.html</b>,
+      <b class="text-slate-800">routine.html</b>,
+      <b class="text-slate-800">assignment.html</b>,
+      <b class="text-slate-800">cover.html</b>  
+      <br>
+      তারপর <b class="text-slate-800">index.html</b> ওপেন করলেই সব টুল access পাবেন।
     </div>
+
   </div>
 </body>
 </html>
