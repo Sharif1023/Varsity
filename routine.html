@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Routine Builder (Editable + Serial Time Slots + Merge)</title>
+
+  <!-- jsPDF + AutoTable -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111a2e; --muted:#91a4c7; --text:#eaf0ff;
+      --accent:#4da3ff; --border:rgba(255,255,255,.10);
+      --danger:#ff5a6a; --ok:#33d69f;
+
+      --paper:#ffffff; --ink:#111;
+      --head:#e6ecff;
+      --day:#f2f2f2;
+      --grid:rgba(0,0,0,.18);
+
+      --select: rgba(77,163,255,.25);
+      --selectBorder: rgba(77,163,255,.8);
+    }
+    *{box-sizing:border-box;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;}
+    body{margin:0;background:linear-gradient(180deg,#070b14,#0b1220);color:var(--text);}
+    .wrap{max-width:1250px;margin:0 auto;padding:20px;}
+    .topbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      padding:14px 16px;border:1px solid var(--border);border-radius:16px;
+      background:rgba(17,26,46,.75);backdrop-filter:blur(10px);
+    }
+    .brand{display:flex;gap:12px;align-items:center;}
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      background:radial-gradient(circle at 30% 30%,#7bc3ff,#1e5cff);
+      display:grid;place-items:center;font-weight:900;
+    }
+    .topbar h1{font-size:16px;margin:0;}
+    .topbar p{margin:0;color:var(--muted);font-size:12px;line-height:1.4;}
+    a.back{color:var(--text);text-decoration:none;border:1px solid var(--border);padding:10px 12px;border-radius:14px;}
+
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px;}
+    .card{
+      border:1px solid var(--border);border-radius:18px;padding:16px;
+      background:rgba(17,26,46,.75);backdrop-filter:blur(10px);
+    }
+    .hint{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.6;}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+    .btn{
+      border:none;padding:10px 12px;border-radius:14px;cursor:pointer;
+      font-weight:900;color:#061022;background:var(--accent);
+    }
+    .btn.secondary{background:transparent;color:var(--text);border:1px solid var(--border);}
+    .btn.danger{background:var(--danger);color:#fff;}
+    .btn.ok{background:var(--ok);color:#04110c;}
+
+    .settings{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:10px;
+      margin-top:10px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:rgba(0,0,0,.12);
+    }
+    .field{grid-column: span 6;}
+    .field.sm{grid-column: span 3;}
+    .field.full{grid-column: 1 / -1;}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
+    input[type="text"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      outline:none;
+      font-weight:800;
+    }
+    input[type="text"]::placeholder{color:rgba(234,240,255,.45);}
+
+    .slotsWrap{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:10px;
+    }
+    .slotField{grid-column: span 4;}
+    @media (max-width: 900px){
+      .field{grid-column: span 12;}
+      .field.sm{grid-column: span 6;}
+      .slotField{grid-column: span 12;}
+    }
+
+    .paper{
+      background:var(--paper); color:var(--ink);
+      border-radius:14px; padding:18px;
+      border:1px dashed rgba(0,0,0,.25);
+      overflow:auto;
+    }
+    .paper-title{
+      text-align:center;
+      font-weight:900;
+      font-size:20px;
+      letter-spacing:.3px;
+      margin:0;
+    }
+    .paper-sub{
+      text-align:center;
+      font-weight:900;
+      font-size:16px;
+      margin:4px 0 14px;
+    }
+
+    table.routine{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:13px;
+    }
+    table.routine th, table.routine td{
+      border:1px solid var(--grid);
+      padding:8px;
+      vertical-align:middle;
+      text-align:center;
+      word-wrap:break-word;
+      position:relative;
+    }
+    table.routine th{background:var(--head);font-weight:900;}
+    table.routine th.daytime{width:14%;}
+    table.routine td.day{
+      background:var(--day);
+      font-weight:900;
+      width:14%;
+      user-select:none;
+    }
+
+    .cell{
+      width:100%;
+      min-height:44px;
+      border:0;
+      outline:none;
+      resize:none;
+      text-align:center;
+      background:transparent;
+      color:var(--ink);
+      font-size:13px;
+      line-height:1.2;
+    }
+
+    td.slot.selected{
+      background: rgba(77,163,255,.25);
+      box-shadow: inset 0 0 0 2px rgba(77,163,255,.8);
+    }
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:rgba(0,0,0,.15);
+      color:var(--muted);
+      font-size:12px;
+    }
+    .kbd{
+      display:inline-block;
+      padding:2px 8px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      color:var(--text);
+      font-weight:800;
+      background:rgba(255,255,255,.06);
+      margin:0 4px;
+    }
+
+    .note{
+      margin-top:10px;
+      font-size:12px;
+      color:#444;
+      text-align:center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">📅</div>
+        <div>
+          <h1>Routine Builder (Editable + Serial Time Slots + Merge)</h1>
+          <p>Semester/Section/Time slots serially add → Merge/Unmerge → Download PDF</p>
+        </div>
+      </div>
+      <a class="back" href="index.html">← Home</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <p class="hint">
+          ✅ Merge করার নিয়ম:<br/>
+          1) একটা সেলে ক্লিক করুন<br/>
+          2) তারপর <span class="kbd">Shift</span> চেপে আরেকটা সেলে ক্লিক করুন → মাঝের rectangle সিলেক্ট হবে<br/>
+          3) <b>Merge</b> চাপুন। Undo করতে <b>Unmerge</b> চাপুন।<br/>
+          ⚠️ Merge শুধুমাত্র time-slot সেলগুলোতে কাজ করবে।
+        </p>
+
+        <div class="settings">
+          <div class="field full">
+            <label>Routine Title</label>
+            <input id="titleInput" type="text" value="7th  SEMESTER | CLASS ROUTINE | FALL 2025" />
+          </div>
+
+          <div class="field sm">
+            <label>Section</label>
+            <input id="sectionInput" type="text" value="SECTION A" />
+          </div>
+
+          <div class="field sm">
+            <label>Footer Text</label>
+            <input id="footerInput" type="text" value="Generated by Varsity Tools" />
+          </div>
+
+          <div class="field full">
+            <label>Time Slots (Serial Add / Remove / Edit)</label>
+
+            <div class="slotsWrap" id="timeInputs"></div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+              <input id="newSlotInput" type="text" placeholder="New time slot (e.g. 3:00-4:30)" style="flex:1; min-width:240px;">
+              <button class="btn secondary" id="addSlotBtn" type="button">+ Add Slot (Serial)</button>
+              <button class="btn secondary" id="removeLastSlotBtn" type="button">- Remove Last</button>
+            </div>
+
+            <p class="hint" style="margin:8px 0 0;">
+              ✅ Serial Add: 2:30 এর পরে slot দিলে সেটা 2:30 এর পাশেই বসবে এবং ডাটা ডানে shift হবে।<br/>
+              ⚠️ Structure change হলে merge reset হবে (ডাটা preserve থাকবে)।
+            </p>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="btn ok" id="loadExactBtn">Load Sample Data</button>
+          <button class="btn secondary" id="mergeBtn">Merge Selected</button>
+          <button class="btn secondary" id="unmergeBtn">Unmerge Cell</button>
+          <button class="btn secondary" id="clearSelectionBtn">Clear Selection</button>
+          <button class="btn danger" id="clearCellsBtn">Clear All</button>
+          <button class="btn" id="downloadPdfBtn">Download PDF</button>
+        </div>
+
+        <div class="toolbar">
+          <b style="color:#eaf0ff;">Selection:</b>
+          <span id="selText">None</span>
+          <span style="margin-left:auto;">Tip: Multi-select করতে <span class="kbd">Shift</span> ব্যবহার করুন</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="paper" id="paper">
+          <p class="paper-title" id="paperTitle">7th  SEMESTER | CLASS ROUTINE | FALL 2025</p>
+          <p class="paper-sub" id="paperSection">SECTION A</p>
+
+          <table class="routine" id="routineTable">
+            <thead>
+              <tr id="headRow">
+                <th class="daytime">DAY\TIME</th>
+              </tr>
+            </thead>
+
+            <tbody id="tbody"></tbody>
+          </table>
+
+          <div class="note" id="paperFooter">Generated by Varsity Tools</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------- CONFIG ----------
+  const DAYS = ["SATURDAY","SUNDAY","MONDAY","TUESDAY","WEDNESDAY"];
+  const DEFAULT_TIMES = ["8:30-10:00","10:00-11:30","11:30-1:00","1:00-2:30","2:30-4:00","4:00-5:30"];
+  let TIMES = [...DEFAULT_TIMES];
+
+  const tbody = document.getElementById("tbody");
+  const selText = document.getElementById("selText");
+  const headRow = document.getElementById("headRow");
+
+  const titleInput = document.getElementById("titleInput");
+  const sectionInput = document.getElementById("sectionInput");
+  const footerInput = document.getElementById("footerInput");
+  const paperTitle = document.getElementById("paperTitle");
+  const paperSection = document.getElementById("paperSection");
+  const paperFooter = document.getElementById("paperFooter");
+  const timeInputsWrap = document.getElementById("timeInputs");
+
+  const SAMPLE = {
+    "0_0":"STQAL/NT1\n905",
+    "0_2":"MLL/MTH\n601",
+    "0_4":"CloudCL/KD\n604",
+    "1_1":"CloudC/KD\n510",
+    "1_3":"ML/MTH\n510",
+    "2_2":"ML/MTH\n901",
+    "2_3":"SEEP/TAD\n613",
+    "2_4":"TC/AD\n410",
+    "3_1":"CloudC/KD\n611",
+    "3_3":"STQA/NT1\n610",
+    "3_4":"TWP/ANC\n404",
+    "4_2":"STQA/NT1\n910",
+    "4_4":"SEEP/TAD\n612",
+  };
+
+  // mergeMap: key = "r_c" top-left, value = {rowSpan, colSpan}
+  const mergeMap = new Map();
+
+  // Selection state
+  let anchor = null;
+  let currentRect = null;
+
+  // ---------- helpers ----------
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // Parse "H:MM" from "H:MM-..." => minutes (heuristic AM/PM)
+  function parseStartMinutes(slotLabel){
+    const start = String(slotLabel).split("-")[0].trim(); // "2:30"
+    const m = start.match(/^(\d{1,2})(?::(\d{2}))?$/);
+    if(!m) return Number.POSITIVE_INFINITY;
+    let h = parseInt(m[1], 10);
+    let mm = m[2] ? parseInt(m[2], 10) : 0;
+
+    // Heuristic: treat 1-7 as PM if schedule contains a morning slot (>=8)
+    const hasMorning = TIMES.some(s=>{
+      const st = String(s).split("-")[0].trim();
+      const mm2 = st.match(/^(\d{1,2})(?::(\d{2}))?$/);
+      if(!mm2) return false;
+      const hh = parseInt(mm2[1], 10);
+      return hh >= 8 && hh <= 12;
+    });
+
+    // Keep 12 as 12 (noon). If hasMorning and hour <= 7 => consider PM.
+    if(hasMorning && h >= 1 && h <= 7) h += 12;
+
+    return h * 60 + mm;
+  }
+
+  function findInsertIndexSerial(newSlotLabel){
+    const newStart = parseStartMinutes(newSlotLabel);
+    for(let i=0; i<TIMES.length; i++){
+      const curStart = parseStartMinutes(TIMES[i]);
+      if(newStart < curStart) return i;
+    }
+    return TIMES.length;
+  }
+
+  // ---------- SETTINGS: time inputs ----------
+  function buildTimeInputs(){
+    timeInputsWrap.innerHTML = "";
+    TIMES.forEach((t, idx)=>{
+      const div = document.createElement("div");
+      div.className = "slotField";
+
+      div.innerHTML = `
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Slot ${idx+1}</span>
+          <button type="button" class="btn secondary" style="padding:6px 10px;border-radius:12px;font-weight:900;" data-remove-idx="${idx}">
+            Remove
+          </button>
+        </label>
+        <input type="text" data-time-idx="${idx}" value="${escapeHtml(t)}" />
+      `;
+      timeInputsWrap.appendChild(div);
+    });
+
+    // Edit slot label (only header text changes)
+    timeInputsWrap.querySelectorAll('input[type="text"][data-time-idx]').forEach(inp=>{
+      inp.addEventListener("input", ()=>{
+        const i = +inp.dataset.timeIdx;
+        TIMES[i] = inp.value.trim() || DEFAULT_TIMES[i] || `Slot ${i+1}`;
+        rebuildHeader();
+      });
+    });
+
+    // Remove specific slot (with shifting)
+    timeInputsWrap.querySelectorAll('button[data-remove-idx]').forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const idx = +btn.dataset.removeIdx;
+        removeTimeSlot(idx);
+      });
+    });
+  }
+
+  // ---------- BUILD HEADER + TABLE ----------
+  function rebuildHeader(){
+    while(headRow.children.length > 1) headRow.removeChild(headRow.lastChild);
+    TIMES.forEach(t=>{
+      const th = document.createElement("th");
+      th.textContent = t;
+      headRow.appendChild(th);
+    });
+  }
+
+  function buildTable() {
+    tbody.innerHTML = "";
+    for(let r=0; r<DAYS.length; r++){
+      const tr = document.createElement("tr");
+
+      const dayTd = document.createElement("td");
+      dayTd.className = "day";
+      dayTd.textContent = DAYS[r];
+      tr.appendChild(dayTd);
+
+      for(let c=0; c<TIMES.length; c++){
+        const td = makeSlotCell(r,c);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    attachCellEvents();
+  }
+
+  function makeSlotCell(r,c){
+    const td = document.createElement("td");
+    td.className = "slot";
+    td.dataset.r = r;
+    td.dataset.c = c;
+
+    const ta = document.createElement("textarea");
+    ta.className = "cell";
+    ta.dataset.key = `${r}_${c}`;
+    ta.addEventListener("input", ()=>autoGrow(ta));
+    td.appendChild(ta);
+    autoGrow(ta);
+
+    return td;
+  }
+
+  function autoGrow(el){
+    el.style.height = "auto";
+    el.style.height = Math.max(44, el.scrollHeight) + "px";
+  }
+
+  // ---------- LIVE PREVIEW TEXT ----------
+  function bindMetaInputs(){
+    const sync = ()=>{
+      paperTitle.textContent = titleInput.value.trim() || "CLASS ROUTINE";
+      paperSection.textContent = sectionInput.value.trim() || "SECTION";
+      paperFooter.textContent = footerInput.value.trim() || "";
+    };
+    ["input","change"].forEach(evt=>{
+      titleInput.addEventListener(evt, sync);
+      sectionInput.addEventListener(evt, sync);
+      footerInput.addEventListener(evt, sync);
+    });
+    sync();
+  }
+
+  // ---------- SELECTION ----------
+  function attachCellEvents(){
+    const slots = tbody.querySelectorAll("td.slot");
+    slots.forEach(td=>{
+      td.addEventListener("click", (e)=>{
+        if(!td.isConnected) return;
+        const r = +td.dataset.r;
+        const c = +td.dataset.c;
+
+        if(e.shiftKey && anchor){
+          currentRect = rectFrom(anchor, {r,c});
+          renderSelection(currentRect);
+        } else {
+          anchor = {r,c};
+          currentRect = {r1:r, c1:c, r2:r, c2:c};
+          renderSelection(currentRect);
+        }
+        updateSelText();
+      });
+    });
+  }
+
+  function rectFrom(a,b){
+    return {
+      r1: Math.min(a.r,b.r),
+      c1: Math.min(a.c,b.c),
+      r2: Math.max(a.r,b.r),
+      c2: Math.max(a.c,b.c),
+    };
+  }
+
+  function clearSelection(){
+    tbody.querySelectorAll("td.slot.selected").forEach(td=>td.classList.remove("selected"));
+    anchor = null;
+    currentRect = null;
+    updateSelText();
+  }
+
+  function renderSelection(rect){
+    tbody.querySelectorAll("td.slot.selected").forEach(td=>td.classList.remove("selected"));
+    if(!rect) return;
+
+    for(let r=rect.r1; r<=rect.r2; r++){
+      for(let c=rect.c1; c<=rect.c2; c++){
+        const td = getCell(r,c);
+        if(td) td.classList.add("selected");
+      }
+    }
+  }
+
+  function updateSelText(){
+    if(!currentRect){
+      selText.textContent = "None";
+      return;
+    }
+    const {r1,c1,r2,c2} = currentRect;
+    selText.textContent = `Rows ${r1+1}-${r2+1} (Days: ${DAYS[r1]} → ${DAYS[r2]}), Cols ${c1+1}-${c2+1}`;
+  }
+
+  function getCell(r,c){
+    return tbody.querySelector(`td.slot[data-r="${r}"][data-c="${c}"]`);
+  }
+
+  // ---------- MERGE / UNMERGE ----------
+  function canMerge(rect){
+    if(!rect) return {ok:false, msg:"No selection"};
+    const rs = rect.r2 - rect.r1 + 1;
+    const cs = rect.c2 - rect.c1 + 1;
+    if(rs===1 && cs===1) return {ok:false, msg:"Select more than one cell to merge"};
+
+    for(let r=rect.r1; r<=rect.r2; r++){
+      for(let c=rect.c1; c<=rect.c2; c++){
+        const td = getCell(r,c);
+        if(!td) return {ok:false, msg:"Some selected cells are already merged/removed"};
+      }
+    }
+    return {ok:true};
+  }
+
+  function mergeSelected(){
+    const rect = currentRect;
+    const chk = canMerge(rect);
+    if(!chk.ok){ alert(chk.msg); return; }
+
+    const topLeft = getCell(rect.r1, rect.c1);
+    const rowSpan = rect.r2 - rect.r1 + 1;
+    const colSpan = rect.c2 - rect.c1 + 1;
+
+    topLeft.rowSpan = rowSpan;
+    topLeft.colSpan = colSpan;
+
+    mergeMap.set(`${rect.r1}_${rect.c1}`, {rowSpan, colSpan});
+
+    for(let r=rect.r1; r<=rect.r2; r++){
+      for(let c=rect.c1; c<=rect.c2; c++){
+        if(r===rect.r1 && c===rect.c1) continue;
+        const td = getCell(r,c);
+        if(td) td.remove();
+      }
+    }
+    clearSelection();
+  }
+
+  function findMergedTopLeftForCell(r,c){
+    const selfKey = `${r}_${c}`;
+    if(mergeMap.has(selfKey)) return {key:selfKey, r, c};
+
+    for(const [key, span] of mergeMap.entries()){
+      const [tr, tc] = key.split("_").map(Number);
+      const r2 = tr + span.rowSpan - 1;
+      const c2 = tc + span.colSpan - 1;
+      if(r>=tr && r<=r2 && c>=tc && c<=c2){
+        return {key, r:tr, c:tc};
+      }
+    }
+    return null;
+  }
+
+  function unmergeSelected(){
+    if(!currentRect){ alert("Select a merged cell (or any cell inside a merged area) then click Unmerge."); return; }
+
+    const r = currentRect.r1;
+    const c = currentRect.c1;
+
+    const top = findMergedTopLeftForCell(r,c);
+    if(!top){ alert("This cell is not merged."); return; }
+
+    const span = mergeMap.get(top.key);
+    if(!span){ alert("This cell is not merged."); return; }
+
+    const topLeft = getCell(top.r, top.c);
+    if(!topLeft){ alert("Merged top-left cell not found."); return; }
+
+    const rowSpan = span.rowSpan;
+    const colSpan = span.colSpan;
+    topLeft.rowSpan = 1;
+    topLeft.colSpan = 1;
+
+    for(let rr=top.r; rr<=top.r+rowSpan-1; rr++){
+      const tr = tbody.children[rr];
+      for(let cc=top.c; cc<=top.c+colSpan-1; cc++){
+        if(rr===top.r && cc===top.c) continue;
+        if(getCell(rr,cc)) continue;
+
+        const tdNew = makeSlotCell(rr,cc);
+        const targetDomIndex = 1 + cc;
+        const kids = Array.from(tr.children);
+        if(targetDomIndex >= kids.length){
+          tr.appendChild(tdNew);
+        } else {
+          tr.insertBefore(tdNew, kids[targetDomIndex]);
+        }
+      }
+    }
+
+    mergeMap.delete(top.key);
+    attachCellEvents();
+    clearSelection();
+  }
+
+  // ---------- STRUCTURE CHANGE: SAVE GRID + SHIFT ----------
+  function readGrid(){
+    const grid = Array.from({length: DAYS.length}, ()=> Array.from({length: TIMES.length}, ()=> ""));
+    for(let r=0; r<DAYS.length; r++){
+      for(let c=0; c<TIMES.length; c++){
+        const td = getCell(r,c);
+        if(td){
+          const ta = td.querySelector("textarea.cell");
+          grid[r][c] = ta ? ta.value : "";
+        } else {
+          grid[r][c] = "";
+        }
+      }
+    }
+    return grid;
+  }
+
+  function resetAllMerges(){
+    for(const key of Array.from(mergeMap.keys())){
+      const [r,c] = key.split("_").map(Number);
+      currentRect = {r1:r,c1:c,r2:r,c2:c};
+      unmergeSelected();
+    }
+    mergeMap.clear();
+    clearSelection();
+  }
+
+  function applyTableStructureWithShift(newTimes, shiftType, shiftIndex){
+    // shiftType: "insert" | "remove"
+    const oldTimes = [...TIMES];
+    const oldGrid = readGrid();
+
+    resetAllMerges();
+
+    TIMES = [...newTimes];
+    rebuildHeader();
+    buildTable();
+
+    // build newGrid by shifting columns
+    const newCols = TIMES.length;
+    const newGrid = Array.from({length: DAYS.length}, ()=> Array.from({length: newCols}, ()=> ""));
+
+    for(let r=0; r<DAYS.length; r++){
+      if(shiftType === "insert"){
+        for(let c=0; c<newCols; c++){
+          if(c < shiftIndex){
+            newGrid[r][c] = oldGrid[r][c] ?? "";
+          } else if(c === shiftIndex){
+            newGrid[r][c] = ""; // new column
+          } else {
+            newGrid[r][c] = oldGrid[r][c-1] ?? "";
+          }
+        }
+      } else if(shiftType === "remove"){
+        for(let c=0; c<newCols; c++){
+          if(c < shiftIndex){
+            newGrid[r][c] = oldGrid[r][c] ?? "";
+          } else {
+            newGrid[r][c] = oldGrid[r][c+1] ?? "";
+          }
+        }
+      } else {
+        // fallback (no shift): try map by index
+        for(let c=0; c<Math.min(oldTimes.length, newCols); c++){
+          newGrid[r][c] = oldGrid[r][c] ?? "";
+        }
+      }
+    }
+
+    // write values
+    for(let r=0; r<DAYS.length; r++){
+      for(let c=0; c<TIMES.length; c++){
+        const td = getCell(r,c);
+        if(td){
+          const ta = td.querySelector("textarea.cell");
+          if(ta){
+            ta.value = newGrid[r][c] || "";
+            autoGrow(ta);
+          }
+        }
+      }
+    }
+
+    buildTimeInputs();
+  }
+
+  // ---------- TIME SLOT: SERIAL INSERT ----------
+  function addTimeSlotSerial(label){
+    const txt = (label || "").trim();
+    if(!txt){
+      alert("New time slot লিখুন (e.g. 3:00-4:30)");
+      return;
+    }
+
+    // Insert index based on start time
+    const idx = findInsertIndexSerial(txt);
+    const newTimes = [...TIMES.slice(0, idx), txt, ...TIMES.slice(idx)];
+
+    applyTableStructureWithShift(newTimes, "insert", idx);
+  }
+
+  function removeTimeSlot(index){
+    if(TIMES.length <= 1){
+      alert("At least 1 time slot must remain.");
+      return;
+    }
+    if(index < 0 || index >= TIMES.length) return;
+
+    const newTimes = TIMES.filter((_, i)=> i !== index);
+    applyTableStructureWithShift(newTimes, "remove", index);
+  }
+
+  // ---------- DATA LOAD / CLEAR ----------
+  function setSample(){
+    clearAllCells();
+    for(const k in SAMPLE){
+      const ta = document.querySelector(`textarea.cell[data-key="${k}"]`);
+      if(ta){
+        ta.value = SAMPLE[k];
+        autoGrow(ta);
+      }
+    }
+  }
+
+  function clearAllCells(){
+    resetAllMerges();
+    tbody.querySelectorAll("textarea.cell").forEach(t=>{
+      t.value="";
+      autoGrow(t);
+    });
+    clearSelection();
+  }
+
+  // ---------- PDF EXPORT ----------
+  function downloadPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p","mm","a4");
+
+    const title = (titleInput.value || "").trim() || "CLASS ROUTINE";
+    const section = (sectionInput.value || "").trim() || "SECTION";
+    const footer = (footerInput.value || "").trim();
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(16);
+    doc.text(title, 105, 16, {align:"center"});
+    doc.setFontSize(14);
+    doc.text(section, 105, 24, {align:"center"});
+
+    const head = [[ "DAY\\TIME", ...TIMES ]];
+
+    const body = [];
+    for(let r=0; r<DAYS.length; r++){
+      const row = [];
+      row.push({ content: DAYS[r], styles:{ fillColor:[242,242,242], fontStyle:"bold", halign:"center" } });
+
+      for(let c=0; c<TIMES.length; c++){
+        const td = getCell(r,c);
+
+        if(!td){
+          row.push("");
+          continue;
+        }
+
+        const ta = td.querySelector("textarea.cell");
+        const txt = (ta?.value || "").trim();
+
+        const cs = td.colSpan || 1;
+        const rs = td.rowSpan || 1;
+
+        if(cs > 1 || rs > 1){
+          row.push({ content: txt, colSpan: cs, rowSpan: rs, styles:{ halign:"center", valign:"middle" } });
+          for(let skip=1; skip<cs; skip++) c++;
+        } else {
+          row.push(txt);
+        }
+      }
+      body.push(row);
+    }
+
+    doc.autoTable({
+      startY: 32,
+      head,
+      body,
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 9.5, cellPadding: 2.2, halign: "center", valign: "middle" },
+      headStyles: { fillColor: [230,236,255], textColor: [20,20,20], fontStyle: "bold" },
+      margin: { left: 10, right: 10 },
+    });
+
+    if(footer){
+      doc.setFontSize(9);
+      doc.text(footer, 105, 290, {align:"center"});
+    }
+
+    doc.save("routine-merged.pdf");
+  }
+
+  // ---------- Buttons ----------
+  document.getElementById("loadExactBtn").addEventListener("click", setSample);
+  document.getElementById("mergeBtn").addEventListener("click", mergeSelected);
+  document.getElementById("unmergeBtn").addEventListener("click", unmergeSelected);
+  document.getElementById("clearSelectionBtn").addEventListener("click", clearSelection);
+  document.getElementById("clearCellsBtn").addEventListener("click", clearAllCells);
+  document.getElementById("downloadPdfBtn").addEventListener("click", downloadPDF);
+
+  document.getElementById("addSlotBtn").addEventListener("click", ()=>{
+    const v = document.getElementById("newSlotInput").value;
+    addTimeSlotSerial(v);
+    document.getElementById("newSlotInput").value = "";
+  });
+
+  document.getElementById("removeLastSlotBtn").addEventListener("click", ()=>{
+    removeTimeSlot(TIMES.length - 1);
+  });
+
+  // Init
+  rebuildHeader();
+  buildTable();
+  buildTimeInputs();
+  bindMetaInputs();
+  setSample();
+</script>
+</body>
+</html>
