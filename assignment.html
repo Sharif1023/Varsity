@@ -47,26 +47,31 @@
       box-shadow:0 0 0 2px rgba(77,163,255,.35);
       background:rgba(77,163,255,.10);
     }
-
-    /* Ensure contenteditable keeps spaces nicely */
     [contenteditable="true"]{white-space:pre-wrap;}
+
+    /* Superscript style (preview) */
+    sup{
+      font-size: 70%;
+      vertical-align: super;
+      line-height: 0;
+    }
   </style>
 </head>
 
 <body class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-slate-100">
   <div class="mx-auto max-w-5xl p-5">
+
     <!-- Topbar -->
     <div class="no-print flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur px-4 py-3">
       <div class="flex items-center gap-3">
         <div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-sky-400 to-blue-600 font-black text-slate-950">🧾</div>
         <div>
           <div class="text-base font-black leading-tight">Assignment Cover Page</div>
-          <div class="text-xs text-slate-300">Right-side A4 only • Click to edit • Upload logo • Download PDF</div>
+          <div class="text-xs text-slate-300">A4 only • Click to edit • Upload logo • Download PDF</div>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <!-- Logo upload (kept as option) -->
         <input id="logoFile" type="file" accept="image/*"
           class="block w-full max-w-[240px] rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-slate-100 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-500/90 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-slate-950 hover:file:bg-sky-400"
         />
@@ -86,6 +91,7 @@
     <div class="mt-4 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur p-4">
       <div class="a4-wrap">
         <div class="a4-page" id="page">
+
           <!-- Logo -->
           <div class="flex justify-center">
             <img id="logoPreview"
@@ -99,7 +105,6 @@
             <div id="p_uniTitle" contenteditable="true"
                  class="text-[18pt] font-black tracking-wide">PREMIER UNIVERSITY CHATTOGRAM</div>
 
-            <!-- Department line with bold part (tight gap) -->
             <div class="mt-1 inline-block border border-black px-2 py-[2px] text-[9pt]">
               <span id="p_deptPrefix" contenteditable="true" class="font-normal">DEPARTMENT OF</span>
               <span class="mx-[2px]"></span>
@@ -107,7 +112,7 @@
             </div>
           </div>
 
-          <!-- ASSIGNMENT -->
+          <!-- MAIN HEADING -->
           <div id="p_bigHeading" contenteditable="true"
                class="mt-6 text-center text-[18pt] font-black underline">ASSIGNMENT</div>
 
@@ -122,20 +127,28 @@
                 <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">COURSE CODE</td>
                 <td id="p_courseCode" contenteditable="true" class="border border-black px-2 py-2">CSE 3637</td>
               </tr>
+
+              <!-- ✅ EDITABLE LABEL: ASSIGNMENT NO -->
               <tr>
-                <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">ASSIGNMENT NO</td>
+                <td id="p_assignNoLabel" contenteditable="true"
+                    class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">ASSIGNMENT NO</td>
                 <td id="p_assignNo" contenteditable="true" class="border border-black px-2 py-2">01</td>
               </tr>
+
+              <!-- ✅ EDITABLE LABEL: ASSIGNMENT NAME -->
               <tr>
-                <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">ASSIGNMENT NAME</td>
-                <td id="p_assignName" contenteditable="true" class="border border-black px-2 py-2">
-                  Secure Authentication in Digital Banking Amid Fraudulent Transactions
-                </td>
+                <td id="p_assignNameLabel" contenteditable="true"
+                    class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">ASSIGNMENT NAME</td>
+                <td id="p_assignName" contenteditable="true" class="border border-black px-2 py-2">Secure Authentication in Digital Banking Amid Fraudulent Transactions</td>
               </tr>
+
+              <!-- ✅ EDITABLE LABEL: DATE OF ASSIGNMENT -->
               <tr>
-                <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">DATE OF ASSIGNMENT</td>
+                <td id="p_dateAssignLabel" contenteditable="true"
+                    class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">DATE OF ASSIGNMENT</td>
                 <td id="p_dateAssign" contenteditable="true" class="border border-black px-2 py-2">09.09.25</td>
               </tr>
+
               <tr>
                 <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">DATE OF SUBMISSION</td>
                 <td id="p_dateSub" contenteditable="true" class="border border-black px-2 py-2">09.10.25</td>
@@ -172,14 +185,17 @@
                 <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">ID</td>
                 <td id="p_subById" contenteditable="true" class="border border-black px-2 py-2">0222220005101023</td>
               </tr>
+
               <tr>
                 <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">SEMESTER</td>
-                <td id="p_semester" contenteditable="true" class="border border-black px-2 py-2">6th</td>
+                <td id="p_semester" contenteditable="true" class="border border-black px-2 py-2">6<sup>th</sup></td>
               </tr>
+
               <tr>
                 <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">BATCH</td>
-                <td id="p_batch" contenteditable="true" class="border border-black px-2 py-2">42nd</td>
+                <td id="p_batch" contenteditable="true" class="border border-black px-2 py-2">42<sup>nd</sup></td>
               </tr>
+
               <tr>
                 <td class="border border-black px-2 py-2 text-[9.5pt] font-extrabold uppercase">SESSION</td>
                 <td id="p_session" contenteditable="true" class="border border-black px-2 py-2">Spring 2025</td>
@@ -194,11 +210,9 @@
         </div>
       </div>
 
-      <!-- mini help -->
       <div class="no-print mt-3 text-xs text-slate-300">
-        ✅ Edit: A4 page এর লেখায় ক্লিক করে টাইপ করুন।<br/>
-        ✅ Logo: Upload করলে logo বদলাবে, Reset দিলে আবার default হবে।<br/>
-        ✅ PDF: Download PDF ক্লিক করুন।
+        ✅ এখন Left label গুলো edit করা যাবে: “ASSIGNMENT NO/NAME/DATE…” → “REPORT NO/NAME/DATE…”<br/>
+        ✅ PDF-এও ঠিক একই label যাবে।
       </div>
     </div>
   </div>
@@ -210,12 +224,40 @@
   const resetLogoBtn = document.getElementById("resetLogoBtn");
   const downloadBtn = document.getElementById("downloadBtn");
 
-  // store uploaded logo as base64
   const state = { logoDataUrl: "" };
 
   function getText(id){
     const el = document.getElementById(id);
     return (el?.textContent || "").trim();
+  }
+  function getHTML(id){
+    const el = document.getElementById(id);
+    return (el?.innerHTML || "").trim();
+  }
+
+  // Smart ordinal
+  function toOrdinalHTML(plain){
+    const t = (plain || "").trim();
+    const m = t.match(/^(\d+)\s*(st|nd|rd|th)$/i);
+    if (!m) return null;
+    return `${m[1]}<sup>${m[2].toLowerCase()}</sup>`;
+  }
+  function placeCaretAtEnd(el){
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  function normalizeOrdinalField(el){
+    const plain = (el.textContent || "").trim();
+    if (!plain) { el.innerHTML = ""; return; }
+    const html = toOrdinalHTML(plain);
+    if (!html) return;
+    el.innerHTML = html;
+    placeCaretAtEnd(el);
   }
 
   // Logo upload
@@ -234,7 +276,6 @@
     reader.readAsDataURL(file);
   });
 
-  // Reset logo
   resetLogoBtn.addEventListener("click", ()=>{
     state.logoDataUrl = "";
     logoFile.value = "";
@@ -253,7 +294,7 @@
     doc.setFontSize(fontSize);
 
     const maxW = w - pad*2;
-    const lines = doc.splitTextToSize(text || "—", maxW);
+    const lines = doc.splitTextToSize(text || "", maxW);
 
     const lineH = fontSize * 0.35 + 3;
     const textH = lines.length * lineH;
@@ -264,6 +305,59 @@
     if (align === "right") tx = x + w - pad;
 
     doc.text(lines, tx, ty, {align});
+  }
+
+  function parseOrdinalFromHTML(html){
+    const div = document.createElement("div");
+    div.innerHTML = html || "";
+    const text = (div.textContent || "").trim();
+    const m = text.match(/^(\d+)\s*(st|nd|rd|th)$/i);
+    if (!m) return null;
+    return { base: m[1], suf: m[2].toLowerCase() };
+  }
+
+  function drawOrdinalPDF(doc, htmlOrText, x, y, opt={}){
+    const align = opt.align || "left";
+    const fontSize = opt.fontSize || 11;
+    const bold = !!opt.bold;
+
+    const parsed = parseOrdinalFromHTML(htmlOrText) || (()=>{
+      const t = (htmlOrText || "").trim();
+      const m = t.match(/^(\d+)\s*(st|nd|rd|th)$/i);
+      return m ? { base:m[1], suf:m[2].toLowerCase() } : null;
+    })();
+
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+
+    if (!parsed){
+      doc.setFontSize(fontSize);
+      const t = (htmlOrText || "—").replace(/<[^>]*>/g, "").trim() || "—";
+      doc.text(t, x, y, {align});
+      return;
+    }
+
+    const base = parsed.base;
+    const suf = parsed.suf;
+    const sufSize = Math.max(7, Math.round(fontSize * 0.62));
+
+    doc.setFontSize(fontSize);
+    const baseW = doc.getTextWidth(base);
+
+    doc.setFontSize(sufSize);
+    const sufW = doc.getTextWidth(suf);
+
+    const totalW = baseW + sufW;
+
+    let startX = x;
+    if (align === "center") startX = x - totalW/2;
+    if (align === "right") startX = x - totalW;
+
+    doc.setFontSize(fontSize);
+    doc.text(base, startX, y);
+
+    const liftMm = 1.05;
+    doc.setFontSize(sufSize);
+    doc.text(suf, startX + baseW, y - liftMm);
   }
 
   async function urlToDataURL(url){
@@ -280,18 +374,24 @@
   function drawDeptMixed(doc, centerX, y, prefix, boldPart, fontSize=9){
     doc.setFontSize(fontSize);
 
+    const gap = "\u00A0";
+
     doc.setFont("helvetica","normal");
-    const w1 = doc.getTextWidth(prefix + " ");
+    const wPrefix = doc.getTextWidth(prefix);
+    const wGap = doc.getTextWidth(gap);
 
     doc.setFont("helvetica","bold");
-    const w2 = doc.getTextWidth(boldPart);
+    const wBold = doc.getTextWidth(boldPart);
 
-    const total = w1 + w2;
+    const total = wPrefix + wGap + wBold;
     let startX = centerX - total/2;
 
     doc.setFont("helvetica","normal");
-    doc.text(prefix + " ", startX, y);
-    startX += w1;
+    doc.text(prefix, startX, y);
+    startX += wPrefix;
+
+    doc.text(gap, startX, y);
+    startX += wGap;
 
     doc.setFont("helvetica","bold");
     doc.text(boldPart, startX, y);
@@ -304,7 +404,6 @@
     const margin = 14;
     let y = margin;
 
-    // Logo for PDF
     let logoData = state.logoDataUrl;
     if (!logoData){
       try{ logoData = await urlToDataURL(DEFAULT_LOGO_PATH); }
@@ -320,13 +419,11 @@
       }catch(e){ y += 4; }
     } else { y += 4; }
 
-    // University title
     doc.setFont("helvetica","bold");
     doc.setFontSize(16);
     doc.text(getText("p_uniTitle") || "—", 105, y + 6, {align:"center"});
 
-    // Department boxed line with mixed bold
-    const deptBoxW = 170, deptBoxH = 6;
+    const deptBoxW = 120, deptBoxH = 6;
     const deptX = (210 - deptBoxW)/2;
     const deptY = y + 10;
     doc.setLineWidth(0.2);
@@ -341,7 +438,6 @@
       9
     );
 
-    // Big heading
     const bigHeading = getText("p_bigHeading") || "ASSIGNMENT";
     doc.setFont("helvetica","bold");
     doc.setFontSize(18);
@@ -351,7 +447,6 @@
     const tw = doc.getTextWidth(bigHeading);
     doc.line(105 - tw/2, titleY + 1.2, 105 + tw/2, titleY + 1.2);
 
-    // Tables
     let tableY = titleY + 8;
     const tableX = margin;
     const tableW = 210 - margin*2;
@@ -361,12 +456,17 @@
 
     doc.setLineWidth(0.2);
 
+    // ✅ labels pulled from editable cells
+    const assignNoLabel   = getText("p_assignNoLabel")   || "ASSIGNMENT NO";
+    const assignNameLabel = getText("p_assignNameLabel") || "ASSIGNMENT NAME";
+    const dateAssignLabel = getText("p_dateAssignLabel") || "DATE OF ASSIGNMENT";
+
     const rows = [
       ["COURSE NAME", getText("p_courseName")],
       ["COURSE CODE", getText("p_courseCode")],
-      ["ASSIGNMENT NO", getText("p_assignNo")],
-      ["ASSIGNMENT NAME", getText("p_assignName")],
-      ["DATE OF ASSIGNMENT", getText("p_dateAssign")],
+      [assignNoLabel, getText("p_assignNo")],
+      [assignNameLabel, getText("p_assignName")],
+      [dateAssignLabel, getText("p_dateAssign")],
       ["DATE OF SUBMISSION", getText("p_dateSub")]
     ];
 
@@ -376,7 +476,6 @@
       tableY += rowH;
     });
 
-    // Submitted To
     drawCell(doc, tableX, tableY, tableW, 10, "SUBMITTED TO", {bold:true, fontSize:10});
     tableY += 10;
 
@@ -388,23 +487,40 @@
     doc.text(getText("p_subToMeta") || "—", 105, tableY + 13.2, {align:"center"});
     tableY += subToH;
 
-    // Submitted By
     drawCell(doc, tableX, tableY, tableW, 10, "SUBMITTED BY", {bold:true, fontSize:10});
     tableY += 10;
 
     const smallRows = [
       ["NAME", getText("p_subByName")],
       ["ID", getText("p_subById")],
-      ["SEMESTER", getText("p_semester")],
-      ["BATCH", getText("p_batch")],
+      ["SEMESTER", getHTML("p_semester")],
+      ["BATCH", getHTML("p_batch")],
       ["SESSION", getText("p_session")],
       ["SECTION", getText("p_section")]
     ];
 
     const smallLeft = leftW * 0.6;
+
     smallRows.forEach(([lab, v])=>{
       drawCell(doc, tableX, tableY, smallLeft, 11, lab, {bold:true, fontSize:10});
-      drawCell(doc, tableX + smallLeft, tableY, tableW - smallLeft, 11, v || "—", {fontSize:11});
+      doc.rect(tableX + smallLeft, tableY, tableW - smallLeft, 11);
+
+      const rx = tableX + smallLeft + 2.2;
+      const baselineY = tableY + 7.35;
+
+      const plain = (v || "").replace(/<[^>]*>/g, "").trim();
+      const isOrdinal = /^\d+\s*(st|nd|rd|th)$/i.test(plain);
+
+      if (isOrdinal){
+        drawOrdinalPDF(doc, v, rx, baselineY, {align:"left", fontSize:11});
+      } else {
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(11);
+        const txt = plain || "—";
+        const lines = doc.splitTextToSize(txt, (tableW - smallLeft) - 4.4);
+        doc.text(lines, rx, baselineY);
+      }
+
       tableY += 11;
     });
 
@@ -413,15 +529,30 @@
 
   downloadBtn.addEventListener("click", downloadPDF);
 
-  // Helpful UX: Tab should move to next line instead of leaving the page
+  // contenteditable UX
   document.querySelectorAll('[contenteditable="true"]').forEach(el=>{
     el.addEventListener("keydown", (e)=>{
       if (e.key === "Enter"){
-        // allow line breaks for long text cells (like assignment name)
         document.execCommand("insertLineBreak");
         e.preventDefault();
       }
     });
+
+    el.addEventListener("paste", (e)=>{
+      const id = el.id;
+      if (id === "p_semester" || id === "p_batch") return;
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData("text");
+      document.execCommand("insertText", false, text);
+    });
+  });
+
+  // ordinal auto-superscript
+  ["p_semester","p_batch"].forEach(id=>{
+    const field = document.getElementById(id);
+    if (!field) return;
+    field.addEventListener("input", ()=> normalizeOrdinalField(field));
+    field.addEventListener("blur",  ()=> normalizeOrdinalField(field));
   });
 </script>
 </body>
