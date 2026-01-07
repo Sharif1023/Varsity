@@ -242,6 +242,7 @@
     if (!m) return null;
     return `${m[1]}<sup>${m[2].toLowerCase()}</sup>`;
   }
+
   function placeCaretAtEnd(el){
     el.focus();
     const range = document.createRange();
@@ -251,13 +252,21 @@
     sel.removeAllRanges();
     sel.addRange(range);
   }
-  function normalizeOrdinalField(el){
+
+  // ✅ FIX: keepFocus param
+  function normalizeOrdinalField(el, keepFocus = false){
     const plain = (el.textContent || "").trim();
     if (!plain) { el.innerHTML = ""; return; }
+
     const html = toOrdinalHTML(plain);
     if (!html) return;
+
     el.innerHTML = html;
-    placeCaretAtEnd(el);
+
+    // ✅ Only keep caret while actively editing this field
+    if (keepFocus && document.activeElement === el){
+      placeCaretAtEnd(el);
+    }
   }
 
   // Logo upload
@@ -547,12 +556,13 @@
     });
   });
 
-  // ordinal auto-superscript
+  // ✅ FIXED: ordinal auto-superscript without trapping focus
   ["p_semester","p_batch"].forEach(id=>{
     const field = document.getElementById(id);
     if (!field) return;
-    field.addEventListener("input", ()=> normalizeOrdinalField(field));
-    field.addEventListener("blur",  ()=> normalizeOrdinalField(field));
+
+    field.addEventListener("input", ()=> normalizeOrdinalField(field, true));
+    field.addEventListener("blur",  ()=> normalizeOrdinalField(field, false));
   });
 </script>
 </body>
