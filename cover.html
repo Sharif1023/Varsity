@@ -16,23 +16,80 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <style>
-    /* A4 exact size */
-    .a4-page{ width:210mm; height:297mm; background:#fff; color:#111; }
+    /* A4 exact page */
+    .a4-page{
+      width:210mm; height:297mm;
+      background:#fff; color:#111;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Print */
     @media print{
       #topbar, #outerCard, #hint { display:none !important; }
       .a4-page{ box-shadow:none !important; border-radius:0 !important; }
+      body{ background:#fff !important; }
     }
 
-    /* contenteditable focus */
-    [contenteditable="true"]{ outline:none; border-radius:8px; }
-    [contenteditable="true"]:focus{
+    /* IMPORTANT: Do NOT style TD directly with contenteditable */
+    /* Use .editable blocks instead */
+    .editable{
+      outline:none;
+      border-radius:6px;
+      padding:2px 6px;
+    }
+    .editable:focus{
       background: rgba(77,163,255,.10);
       box-shadow: 0 0 0 2px rgba(77,163,255,.35);
     }
 
-    /* Table print-safe */
+    /* During export, remove glow only (layout same) */
+    body.exporting .editable:focus{
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    /* Table: crisp borders + no weird rounding */
     table{ width:100%; border-collapse:collapse; table-layout:fixed; }
-    th, td{ border:1px solid #111; word-wrap:break-word; }
+    th, td{
+      border:1px solid #111;
+      padding:0;               /* td padding removed (inner .cell will handle) */
+      vertical-align: middle;
+    }
+    th{
+      background:#f3f4f6;
+      text-align:center;
+      font-weight:900;
+      font-size:13px;
+      padding:10px 8px;
+    }
+
+    /* Cell inner editable area */
+    .cell{
+      width:100%;
+      height:100%;
+      min-height: 11mm;        /* stable row height */
+      display:flex;
+      align-items:center;
+      padding:8px 10px;        /* real padding here (safe) */
+      font-size:13px;
+      line-height:1.2;
+      border-radius:0 !important; /* force straight corners */
+      box-sizing:border-box;
+    }
+    .cell-left{ justify-content:flex-start; text-align:left; }
+    .cell-center{ justify-content:center; text-align:center; }
+
+    /* Prevent pdf “rounded boxes” even if browser applies */
+    td .cell, th { border-radius:0 !important; }
+
+    /* Make rows consistent */
+    .row-h{ height: 12mm; } /* 12 rows fit well */
+
+    /* Export lock to avoid shifting */
+    body.exporting #page{
+      transform:none !important;
+    }
   </style>
 </head>
 
@@ -63,21 +120,20 @@
   </div>
 
   <div id="hint" class="max-w-6xl mx-auto px-4 pt-4 text-sm text-white/70">
-    টেবিলের ভিতরে ক্লিক করে লিখতে পারবেন। PDF করলে A4 তে একদম একইরকম থাকবে।
+    টেবিলের ভিতরে ক্লিক করে লিখতে পারবেন। PDF করলে website এ যেমন দেখায় ঠিক তেমনই থাকবে।
   </div>
 
-  <!-- Outer card ONLY (preview) -->
+  <!-- Preview card -->
   <div id="outerCard" class="max-w-6xl mx-auto px-4 pb-10">
     <div class="mt-4 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur p-4">
       <div class="flex justify-center overflow-auto">
-        <div class="a4-page rounded-xl shadow-[0_22px_80px_rgba(0,0,0,.55)] overflow-hidden" id="page">
+        <div id="page" class="a4-page rounded-xl shadow-[0_22px_80px_rgba(0,0,0,.55)]">
 
-          <!-- A4 padding + layout -->
+          <!-- A4 padding -->
           <div class="h-full p-[14mm] flex flex-col">
 
             <!-- Header -->
             <div>
-              <!-- Logo -->
               <div class="flex justify-center">
                 <img
                   id="logoPreview"
@@ -87,45 +143,39 @@
                 />
               </div>
 
-              <!-- Uni + Dept -->
-              <div class="mt-2 text-center">
-                <div id="p_uniTitle" contenteditable="true"
-                     class="text-[18pt] font-black tracking-wide text-black px-2 py-1 inline-block">
+              <div class="mt-2 text-center text-black">
+                <div id="p_uniTitle" class="editable inline-block text-[18pt] font-black tracking-wide" contenteditable="true">
                   PREMIER UNIVERSITY CHATTOGRAM
                 </div>
 
-                <div class="mt-1 inline-block border border-black px-2 py-[2px] text-[9pt] text-black">
-                  <span id="p_deptPrefix" contenteditable="true" class="font-normal px-1">DEPARTMENT OF</span>
-                  <span class="mx-[2px]"></span>
-                  <span id="p_deptBold" contenteditable="true" class="font-black px-1">COMPUTER SCIENCE AND ENGINEERING</span>
-                </div>
+                
               </div>
             </div>
 
-            <!-- ✅ Middle content (vertically centered) -->
+            <!-- Middle (centered vertically) -->
             <div class="flex-1 flex flex-col justify-center">
 
-              <!-- Left-side info (serially, left aligned) -->
-              <div class="mt-3 text-[11.5pt] leading-[1.55] text-black">
+              <!-- Left info -->
+              <div class="mt-3 text-black text-[11.5pt] leading-[1.55]">
                 <div class="flex gap-3 items-baseline mb-1">
                   <div class="font-black min-w-[32mm]">Name:</div>
-                  <div contenteditable="true" class="min-w-[90mm] px-2 py-1">______________________________</div>
+                  <div class="editable min-w-[90mm]" contenteditable="true">______________________________</div>
                 </div>
                 <div class="flex gap-3 items-baseline mb-1">
                   <div class="font-black min-w-[32mm]">ID:</div>
-                  <div contenteditable="true" class="min-w-[90mm] px-2 py-1">______________________________</div>
+                  <div class="editable min-w-[90mm]" contenteditable="true">______________________________</div>
                 </div>
                 <div class="flex gap-3 items-baseline mb-1">
                   <div class="font-black min-w-[32mm]">Course Title:</div>
-                  <div contenteditable="true" class="min-w-[90mm] px-2 py-1">Neural Network &amp; Fuzzy Logic Laboratory</div>
+                  <div class="editable min-w-[90mm]" contenteditable="true">Neural Network &amp; Fuzzy Logic Laboratory</div>
                 </div>
                 <div class="flex gap-3 items-baseline">
                   <div class="font-black min-w-[32mm]">Course Code:</div>
-                  <div contenteditable="true" class="min-w-[90mm] px-2 py-1">CSE 452</div>
+                  <div class="editable min-w-[90mm]" contenteditable="true">CSE 452</div>
                 </div>
               </div>
 
-              <!-- Index title -->
+              <!-- Index -->
               <div class="mt-2 text-center text-black">
                 <div class="text-[20pt] font-extrabold">Index</div>
               </div>
@@ -134,88 +184,90 @@
               <div class="mt-3">
                 <table class="text-black">
                   <thead>
-                    <tr class="bg-gray-100">
-                      <th class="py-3 px-3 text-center font-black text-[14px]" style="width:12%;">No</th>
-                      <th class="py-3 px-3 text-center font-black text-[14px]" style="width:56%;">Title</th>
-                      <th class="py-3 px-3 text-center font-black text-[14px]" style="width:18%;">Date</th>
-                      <th class="py-3 px-3 text-center font-black text-[14px]" style="width:14%;">Remarks</th>
+                    <tr>
+                      <th style="width:12%;">No</th>
+                      <th style="width:56%;">Title</th>
+                      <th style="width:18%;">Date</th>
+                      <th style="width:14%;">Remarks</th>
                     </tr>
                   </thead>
 
                   <tbody id="tbody">
-                    <!-- ✅ 12 rows (Typing starts from LEFT in Title/Remarks like আগের মতো) -->
-                    <!-- Title/Remarks: text-left + pl-3, Date: text-center -->
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">1</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <!-- 12 rows (editable is INSIDE cell) -->
+                    <!-- Row 1 -->
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">1</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">2</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+
+                    <!-- Rows 2-12 -->
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">2</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">3</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">3</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">4</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">4</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">5</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">5</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">6</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">6</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">7</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">7</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">8</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">8</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">9</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">9</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">10</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">10</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">11</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">11</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
-                    <tr class="h-[11.6mm]">
-                      <td class="text-center font-semibold py-3 px-3">12</td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
-                      <td contenteditable="true" class="text-center py-3 px-3"></td>
-                      <td contenteditable="true" class="text-left py-3 px-3 pl-3"></td>
+                    <tr class="row-h">
+                      <td><div class="cell cell-center font-semibold">12</div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+                      <td><div class="cell cell-left editable" contenteditable="true"></div></td>
                     </tr>
                   </tbody>
                 </table>
@@ -224,8 +276,8 @@
             </div>
 
             <!-- Footer -->
-            <div class="pt-3 text-[11px] text-gray-600 flex justify-start">
-              <div contenteditable="true" class="text-black/60 px-2 py-1">Submitted To: ____________________</div>
+            <div class="pt-3 text-[11px] flex justify-start">
+              <div class="editable text-black/60" contenteditable="true">Submitted To: ____________________</div>
             </div>
 
           </div>
@@ -239,31 +291,24 @@
 
     function renumber(){
       [...tbody.querySelectorAll('tr')].forEach((tr, i) => {
-        tr.children[0].textContent = String(i + 1);
+        const noCell = tr.querySelector('td:first-child .cell');
+        if (noCell) noCell.textContent = String(i + 1);
       });
     }
 
     document.getElementById('addRowBtn').addEventListener('click', () => {
       const tr = document.createElement('tr');
-      tr.className = 'h-[11.6mm]';
+      tr.className = 'row-h';
 
-      const tdNo = document.createElement('td');
-      tdNo.className = 'text-center font-semibold py-3 px-3';
-      tdNo.textContent = String(tbody.children.length + 1);
+      const idx = tbody.children.length + 1;
 
-      const tdTitle = document.createElement('td');
-      tdTitle.setAttribute('contenteditable','true');
-      tdTitle.className = 'text-left py-3 px-3 pl-3';
+      tr.innerHTML = `
+        <td><div class="cell cell-center font-semibold">${idx}</div></td>
+        <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+        <td><div class="cell cell-center editable" contenteditable="true"></div></td>
+        <td><div class="cell cell-left editable" contenteditable="true"></div></td>
+      `;
 
-      const tdDate = document.createElement('td');
-      tdDate.setAttribute('contenteditable','true');
-      tdDate.className = 'text-center py-3 px-3';
-
-      const tdRem = document.createElement('td');
-      tdRem.setAttribute('contenteditable','true');
-      tdRem.className = 'text-left py-3 px-3 pl-3';
-
-      tr.append(tdNo, tdTitle, tdDate, tdRem);
       tbody.appendChild(tr);
     });
 
@@ -272,25 +317,54 @@
       renumber();
     });
 
+    async function waitForImages(root){
+      const imgs = [...root.querySelectorAll('img')];
+      await Promise.all(imgs.map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(res => {
+          img.addEventListener('load', res, { once:true });
+          img.addEventListener('error', res, { once:true });
+        });
+      }));
+    }
+
     document.getElementById('pdfBtn').addEventListener('click', async () => {
+      // Clean capture
+      document.body.classList.add('exporting');
       if (document.activeElement) document.activeElement.blur();
 
+      // Wait fonts + images
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch(e){}
+      }
       const el = document.getElementById('page');
+      await waitForImages(el);
 
+      // Capture exact A4
       const canvas = await html2canvas(el, {
-        scale: Math.max(2, window.devicePixelRatio || 2),
+        scale: 3,
         useCORS: true,
-        allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        onclone: (doc) => {
+          const cloned = doc.getElementById('page');
+          if (!cloned) return;
+          cloned.style.width = '210mm';
+          cloned.style.height = '297mm';
+          cloned.style.transform = 'none';
+        }
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      const { jsPDF } = window.jspdf;
+      const imgData = canvas.toDataURL('image/png'); // PNG = sharp borders
 
+      const { jsPDF } = window.jspdf;
       const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
       pdf.save('Lab_Report_Index_A4.pdf');
+
+      document.body.classList.remove('exporting');
     });
   </script>
 
